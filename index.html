@@ -19,6 +19,18 @@
         height: 100%;
       }
 
+      #app,
+      .hint,
+      #tooltip {
+        visibility: hidden;
+      }
+
+      body.authenticated #app,
+      body.authenticated .hint,
+      body.authenticated #tooltip {
+        visibility: visible;
+      }
+
       .hint {
         position: fixed;
         top: 12px;
@@ -46,11 +58,96 @@
         pointer-events: none;
         white-space: nowrap;
       }
+
+      .auth-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0b1020;
+      }
+
+      .auth-card {
+        width: min(360px, 92vw);
+        padding: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.9);
+        color: #e2e8f0;
+      }
+
+      .auth-title {
+        margin: 0 0 6px;
+        font-size: 18px;
+      }
+
+      .auth-subtitle {
+        margin: 0 0 14px;
+        color: #94a3b8;
+        font-size: 13px;
+      }
+
+      .auth-field {
+        margin-bottom: 10px;
+      }
+
+      .auth-field label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 12px;
+        color: #cbd5e1;
+      }
+
+      .auth-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        border-radius: 7px;
+        background: rgba(15, 23, 42, 0.85);
+        color: #e2e8f0;
+      }
+
+      .auth-button {
+        width: 100%;
+        padding: 9px 10px;
+        border: 0;
+        border-radius: 7px;
+        background: #0ea5e9;
+        color: #ffffff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .auth-error {
+        min-height: 18px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #f87171;
+      }
     </style>
   </head>
   <body>
+    <div id="authOverlay" class="auth-overlay">
+      <form id="authForm" class="auth-card" autocomplete="off">
+        <h2 class="auth-title">Login Required</h2>
+        <p class="auth-subtitle">Enter credentials to access the experience.</p>
+        <div class="auth-field">
+          <label for="usernameInput">Username</label>
+          <input id="usernameInput" class="auth-input" type="text" />
+        </div>
+        <div class="auth-field">
+          <label for="passwordInput">Password</label>
+          <input id="passwordInput" class="auth-input" type="password" />
+        </div>
+        <button class="auth-button" type="submit">Login</button>
+        <div id="authError" class="auth-error"></div>
+      </form>
+    </div>
     <div id="app"></div>
-    <div class="hint">
+    <div id="hint" class="hint">
       Left drag: rotate<br />
       Right drag: pan<br />
       Scroll: zoom
@@ -68,6 +165,29 @@
     <script type="module">
       import * as THREE from "three";
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+      const authOverlay = document.getElementById("authOverlay");
+      const authForm = document.getElementById("authForm");
+      const usernameInput = document.getElementById("usernameInput");
+      const passwordInput = document.getElementById("passwordInput");
+      const authError = document.getElementById("authError");
+      const validUsername = "detroit";
+      const validPassword = "atheneum";
+      const setAuthenticated = () => {
+        document.body.classList.add("authenticated");
+        authOverlay.style.display = "none";
+      };
+      authForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const isValid =
+          usernameInput.value === validUsername && passwordInput.value === validPassword;
+        if (isValid) {
+          authError.textContent = "";
+          setAuthenticated();
+        } else {
+          authError.textContent = "Invalid username or password.";
+        }
+      });
 
       const app = document.getElementById("app");
       const tooltip = document.getElementById("tooltip");
